@@ -1,16 +1,25 @@
-FROM ubuntu:22.04
+FROM ubuntu:latest
 
-RUN apt-get update && \
+RUN if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then \
+        sed -i 's/^Components:.*/Components: main restricted universe multiverse/' \
+            /etc/apt/sources.list.d/ubuntu.sources; \
+    elif [ -f /etc/apt/sources.list ]; then \
+        sed -i 's/^#\? *deb .* main.*/& universe multiverse/' \
+            /etc/apt/sources.list; \
+    fi && \
+    apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y wget curl git python3 python3-pip neofetch \
+    apt-get install -y --no-install-recommends \
+        wget curl git python3 python3-pip neofetch \
         net-tools iproute2 iputils-ping dnsutils \
         vim nano htop tree unzip zip \
         build-essential gcc g++ make \
-        openssh-client telnet netcat \
+        openssh-client telnet netcat-openbsd \
         jq less man-db sudo lsof strace && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN wget -qO /bin/ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 && \
+RUN wget -qO /bin/ttyd \
+        https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 && \
     chmod +x /bin/ttyd
 
 RUN echo "neofetch" >> /root/.bashrc && \
